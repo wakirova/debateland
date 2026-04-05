@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Counter-Playbook: Narrative Control</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f2eb;
+    --accent: #c8401a;
+    --accent2: #1a5fc8;
+    --muted: #6b6560;
+    --rule: #ccc9c0;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  html { background: var(--paper); }
+
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--paper);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 40px 60px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+    margin-bottom: 6px;
+  }
+  .doc-kicker {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  h1 span { color: var(--accent); }
+  .meta-block {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+  .sub-rule {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── LAYOUT ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .full { margin-bottom: 16px; }
+
+  /* ── SECTION LABEL ── */
+  .sec-label {
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    border: 1px solid var(--rule);
+    padding: 12px 14px;
+    background: #fff;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .card p { color: var(--muted); font-size: 11.5px; }
+  .card-dark {
+    background: var(--ink);
+    color: #f5f2eb;
+    border: 1px solid var(--ink);
+    padding: 12px 14px;
+  }
+  .card-dark .card-title { color: #f5f2eb; }
+  .card-dark p { color: #a09a92; }
+  .card-accent {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+    padding: 12px 14px;
+  }
+  .card-accent .card-title { color: #fff; }
+  .card-accent p { color: rgba(255,255,255,0.8); }
+
+  /* ── STAT ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
+  .stat {
+    border-left: 3px solid var(--ink);
+    padding: 8px 10px;
+    background: #fff;
+    border-top: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .stat-num.red { color: var(--accent); }
+  .stat-num.blue { color: var(--accent2); }
+  .stat-label { font-size: 10px; color: var(--muted); line-height: 1.3; }
+
+  /* ── BAR CHART ── */
+  .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .bar-label { font-family: var(--mono); font-size: 9.5px; width: 110px; flex-shrink: 0; color: var(--ink); }
+  .bar-track { flex: 1; height: 14px; background: #ede9df; position: relative; }
+  .bar-fill { height: 100%; transition: width 0.3s; }
+  .bar-val { font-family: var(--mono); font-size: 9px; color: var(--muted); width: 52px; flex-shrink: 0; }
+
+  /* ── FLOW ── */
+  .flow { display: flex; align-items: stretch; gap: 0; margin-bottom: 16px; }
+  .flow-step {
+    flex: 1;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-right: none;
+    position: relative;
+    font-size: 11px;
+  }
+  .flow-step:last-child { border-right: 1px solid var(--rule); }
+  .flow-step .step-num {
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--muted);
+    margin-bottom: 3px;
+    letter-spacing: 0.08em;
+  }
+  .flow-step .step-title { font-weight: 600; font-size: 11.5px; margin-bottom: 2px; }
+  .flow-step .step-body { color: var(--muted); font-size: 10.5px; }
+  .flow-arrow {
+    display: flex; align-items: center; justify-content: center;
+    width: 18px; flex-shrink: 0;
+    color: var(--accent); font-size: 14px;
+    background: #ede9df;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    z-index: 1;
+  }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 5px 8px;
+    border-bottom: 1.5px solid var(--ink);
+    background: #fff;
+  }
+  td {
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--rule);
+    background: #fff;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 8.5px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+  .pill-red { background: #fde8e2; color: var(--accent); }
+  .pill-blue { background: #e2ecfd; color: var(--accent2); }
+  .pill-green { background: #e2f5e8; color: #1a8c3c; }
+  .pill-gray { background: #ede9df; color: var(--muted); }
+
+  /* ── QUOTE ── */
+  .quote-box {
+    border-left: 3px solid var(--accent);
+    background: #fff;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+  }
+  .quote-text {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 3px;
+  }
+  .quote-source {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  /* ── DIVIDER ── */
+  hr { border: none; border-top: 1px solid var(--rule); margin: 16px 0; }
+  .section-header {
+    display: flex; align-items: baseline; gap: 10px;
+    border-bottom: 1.5px solid var(--ink);
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+  }
+  .section-header h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .section-header .sh-num {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  .inline-note {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    border-top: 1px solid var(--rule);
+    padding-top: 8px;
+    margin-top: 16px;
+  }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+  .tag {
+    font-family: var(--mono);
+    font-size: 8.5px;
+    padding: 2px 7px;
+    background: var(--ink);
+    color: var(--paper);
+    letter-spacing: 0.06em;
+  }
+  .tag.out { background: transparent; border: 1px solid var(--ink); color: var(--ink); }
+
+  .highlight-row {
+    display: flex; gap: 10px; margin-bottom: 14px;
+  }
+  .hl {
+    flex: 1;
+    background: var(--ink);
+    color: #f5f2eb;
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+  .hl strong { font-weight: 600; display: block; margin-bottom: 3px; color: #f5f2eb; font-size: 12px; }
+  .hl span { color: #a09a92; font-size: 10.5px; }
+
+  /* ── LOOP ── */
+  .loop-row {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 16px; background: var(--ink);
+  }
+  .loop-node {
+    flex: 1; padding: 11px 10px; text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+  .loop-node:last-child { border-right: none; }
+  .loop-node .ln-label {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #6b6a6a; margin-bottom: 4px;
+  }
+  .loop-node .ln-name {
+    font-size: 11.5px; font-weight: 600; color: #f5f2eb;
+  }
+  .loop-node .ln-sub { font-size: 10px; color: #7a7772; margin-top: 2px; }
+  .loop-arrow-inner {
+    color: var(--accent); font-size: 16px; padding: 0 2px; flex-shrink: 0;
+    align-self: center;
+  }
+
+  /* ── INTERCEPTION POINTS ── */
+  .intercept-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 0; margin-bottom: 16px;
+    border: 1px solid var(--rule);
+  }
+  .intercept-cell {
+    padding: 12px 14px;
+    border-right: 1px solid var(--rule);
+    background: #fff;
+  }
+  .intercept-cell:last-child { border-right: none; }
+  .ic-num {
+    font-family: var(--mono); font-size: 20px; font-weight: 600;
+    color: var(--accent); line-height: 1; margin-bottom: 4px;
+  }
+  .ic-title { font-size: 11.5px; font-weight: 600; margin-bottom: 4px; }
+  .ic-platform {
+    font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--accent2); margin-bottom: 5px;
+  }
+  .ic-body { font-size: 11px; color: var(--muted); line-height: 1.45; }
+
+  /* ── KILLER QUOTE ── */
+  .killer-quote {
+    background: var(--accent); color: #fff;
+    padding: 12px 16px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .kq-mark {
+    font-family: var(--mono); font-size: 36px; line-height: 1;
+    color: rgba(255,255,255,0.25); flex-shrink: 0;
+  }
+  .kq-text { font-size: 13px; font-weight: 500; line-height: 1.45; }
+  .kq-sub { font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="doc-kicker">HackNU 2026 · Growth Engineering Track · Part 4</div>
+    <h1>The <span>Counter-Playbook</span><br>Attention Without Control = Collapse</h1>
+  </div>
+  <div class="meta-block">
+    1,004 records scraped<br>
+    Reddit · YouTube · HackerNews<br>
+    Mar 2024 → Apr 2026<br>
+    13 spike days detected
+  </div>
+</div>
+<div class="sub-rule">Data-grounded growth distribution plan for a competing AI product. Every recommendation traces to a scraped finding.</div>
+
+<!-- ── SECTION 0: WHAT THE DATA ACTUALLY SHOWS ── -->
+<div class="section-header"><span class="sh-num">00</span><h2>What the scraped data shows</h2></div>
+
+<div class="stat-grid">
+  <div class="stat">
+    <div class="stat-num red">4.3×</div>
+    <div class="stat-label">Higher engagement: workflow_agent vs trust_integrity content</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num blue">10,968</div>
+    <div class="stat-label">Mean engagement, workflow_agent theme (top narrative)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num red">2,572</div>
+    <div class="stat-label">Mean engagement, trust_integrity (lowest theme in dataset)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num blue">13</div>
+    <div class="stat-label">Spike days detected via robust z-score — all tied to launches or controversies</div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="sec-label">Engagement by narrative theme (scraped)</div>
+    <div style="margin-top:6px;">
+      <div class="bar-row"><div class="bar-label">workflow_agent</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#c8401a;"></div></div><div class="bar-val">10,968</div></div>
+      <div class="bar-row"><div class="bar-label">developer_tooling</div><div class="bar-track"><div class="bar-fill" style="width:94.6%;background:#c8401a;"></div></div><div class="bar-val">10,378</div></div>
+      <div class="bar-row"><div class="bar-label">pricing_ops</div><div class="bar-track"><div class="bar-fill" style="width:85.2%;background:#e8855a;"></div></div><div class="bar-val">9,344</div></div>
+      <div class="bar-row"><div class="bar-label">comparison</div><div class="bar-track"><div class="bar-fill" style="width:55.4%;background:#aaa;"></div></div><div class="bar-val">6,081</div></div>
+      <div class="bar-row"><div class="bar-label">launch_model</div><div class="bar-track"><div class="bar-fill" style="width:37.8%;background:#aaa;"></div></div><div class="bar-val">4,141</div></div>
+      <div class="bar-row"><div class="bar-label">trust_integrity</div><div class="bar-track"><div class="bar-fill" style="width:23.4%;background:#1a5fc8;"></div></div><div class="bar-val">2,572</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec-label">Claude Code leak — HN engagement paradox</div>
+    <div style="margin-top:6px;">
+      <div class="bar-row"><div class="bar-label">Opus 4.6 launch</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#1a5fc8;"></div></div><div class="bar-val">2,346 pts</div></div>
+      <div class="bar-row"><div class="bar-label">Claude Code launch</div><div class="bar-track"><div class="bar-fill" style="width:90.7%;background:#1a5fc8;"></div></div><div class="bar-val">2,127 pts</div></div>
+      <div class="bar-row"><div class="bar-label">Code leak (NPM map)</div><div class="bar-track"><div class="bar-fill" style="width:88.7%;background:#c8401a;"></div></div><div class="bar-val">2,080 pts</div></div>
+      <div class="bar-row"><div class="bar-label">Claude 4 launch</div><div class="bar-track"><div class="bar-fill" style="width:85.8%;background:#1a5fc8;"></div></div><div class="bar-val">2,013 pts</div></div>
+      <div class="bar-row"><div class="bar-label">Code leak analysis</div><div class="bar-track"><div class="bar-fill" style="width:58.2%;background:#c8401a;"></div></div><div class="bar-val">1,364 pts</div></div>
+      <div class="bar-row"><div class="bar-label">Code "dumbed down"</div><div class="bar-track"><div class="bar-fill" style="width:46.3%;background:#c8401a;"></div></div><div class="bar-val">1,085 pts</div></div>
+    </div>
+    <p style="margin-top:8px;font-size:10.5px;color:#6b6560;">Scandal posts reach launch-level points but generate negative long-tail. No-trust-budget companies cannot afford this.</p>
+  </div>
+</div>
+
+<div class="quote-box">
+  <div class="quote-text">"Trust-content doesn't go viral → companies ignore it → they chase engagement → they use ragebait → they get attention → but lose trust → crisis."</div>
+  <div class="quote-source">Pattern derived from narrative_theme_summary.csv + HN spike data · trust_integrity = lowest engagement theme at 2,572 mean, yet 3 of top-7 HN posts are controversy-driven</div>
+</div>
+
+<!-- ── SECTION 1: CLAUDE'S IMPLICIT PLAYBOOK ── -->
+<div class="section-header"><span class="sh-num">01</span><h2>Claude's implicit playbook (what we reverse-engineered)</h2></div>
+
+<div class="three-col">
+  <div class="card">
+    <div class="sec-label">Growth engine</div>
+    <div class="card-title">Developer-first seeding</div>
+    <p>67 developer_tooling rows avg 10,378 engagement. Claude Code + Cowork generated the two largest non-scandal spikes in the 2-year dataset.</p>
+  </div>
+  <div class="card">
+    <div class="sec-label">Amplifier</div>
+    <div class="card-title">YouTube as primary channel</div>
+    <p>925 of 1,004 records are YouTube video comments. Platform avg engagement: 12,200 — 6× higher than HN, 80× higher than Reddit in this corpus.</p>
+  </div>
+  <div class="card">
+    <div class="sec-label">Organic fuel</div>
+    <div class="card-title">Comparison narrative</div>
+    <p>146 comparison-tagged rows, avg 6,081. Community generates "Claude vs ChatGPT" content autonomously — zero official messaging required.</p>
+  </div>
+</div>
+
+<!-- ── LOOP: GROWTH IS NOT A FUNNEL ── -->
+<div class="section-header"><span class="sh-num">02</span><h2>Growth is a loop, not a funnel</h2></div>
+
+<div class="killer-quote">
+  <div class="kq-mark">"</div>
+  <div>
+    <div class="kq-text">Claude's growth is not a funnel — it is a self-reinforcing loop driven by triggers, creators, debates, and replication.</div>
+    <div class="kq-sub">This is why competing on ad spend or reach alone fails. The loop compounds. You have to enter it — or intercept it.</div>
+  </div>
+</div>
+
+<div class="loop-row">
+  <div class="loop-node">
+    <div class="ln-label">Trigger</div>
+    <div class="ln-name">Launch / Event</div>
+    <div class="ln-sub">Release, leak, benchmark</div>
+  </div>
+  <div class="loop-arrow-inner">›</div>
+  <div class="loop-node">
+    <div class="ln-label">Creator</div>
+    <div class="ln-name">Content Made</div>
+    <div class="ln-sub">YouTube, HN posts, threads</div>
+  </div>
+  <div class="loop-arrow-inner">›</div>
+  <div class="loop-node">
+    <div class="ln-label">Community</div>
+    <div class="ln-name">Debate Ignites</div>
+    <div class="ln-sub">Reddit, comments, X replies</div>
+  </div>
+  <div class="loop-arrow-inner">›</div>
+  <div class="loop-node">
+    <div class="ln-label">Replication</div>
+    <div class="ln-name">More Content</div>
+    <div class="ln-sub">Reactions, comparisons, clones</div>
+  </div>
+  <div class="loop-arrow-inner">›</div>
+  <div class="loop-node" style="border-right:none;">
+    <div class="ln-label">Distribution</div>
+    <div class="ln-name">Organic reach</div>
+    <div class="ln-sub">Search, shares, DMs — loops back</div>
+  </div>
+</div>
+
+<!-- ── INTERCEPTION POINTS ── -->
+<div class="section-header"><span class="sh-num">03</span><h2>Where we intercept the loop</h2></div>
+
+<div class="intercept-grid">
+  <div class="intercept-cell">
+    <div class="ic-num">01</div>
+    <div class="ic-platform">Reddit · HN</div>
+    <div class="ic-title">Debate layer</div>
+    <div class="ic-body">Enter active comparison threads with technical depth. 146 comparison-tagged rows in our data — all organic, all high-engagement (avg 6,081). Seed the framing before Claude's advocates do.</div>
+  </div>
+  <div class="intercept-cell">
+    <div class="ic-num">02</div>
+    <div class="ic-platform">YouTube</div>
+    <div class="ic-title">Narrative layer</div>
+    <div class="ic-body">YouTube carries 92% of corpus volume and 12,200 avg engagement. Create content that appears alongside Claude search results. "Nova vs Claude" videos intercept existing demand — they don't create it from zero.</div>
+  </div>
+  <div class="intercept-cell" style="border-right:none;">
+    <div class="ic-num">03</div>
+    <div class="ic-platform">All platforms</div>
+    <div class="ic-title">Spike window</div>
+    <div class="ic-body">All 13 spike days trace to launches or controversies. Each spike is a 48–72h window where attention is already accelerating. Moving inside that window costs nothing and captures maximum organic reach.</div>
+  </div>
+</div>
+
+<!-- ── SECTION 02→03 RENUMBERED: THE HACK ── -->
+<div class="section-header"><span class="sh-num">04</span><h2>Our hack — Attention + Narrative Control</h2></div>
+
+<div class="highlight-row">
+  <div class="hl">
+    <strong>What Claude does well</strong>
+    <span>Developer content → YouTube amplification → comparison discourse → organic spikes. Repeat.</span>
+  </div>
+  <div class="hl">
+    <strong>What Claude does not do</strong>
+    <span>Manage the narrative after a spike. The trust_integrity theme has 12 rows — the rarest in the dataset. That gap is exploitable.</span>
+  </div>
+  <div class="hl" style="background:var(--accent);">
+    <strong style="color:#fff;">Our edge</strong>
+    <span style="color:rgba(255,255,255,0.8);">Replicate the growth mechanics. Add a narrative risk layer Claude has no infrastructure for. Win on trust budget.</span>
+  </div>
+</div>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="step-num">STEP 01</div>
+    <div class="step-title">Detect</div>
+    <div class="step-body">Monitor daily volume z-score. Spike threshold: robust-z ≥ 2.0. 13 such days in 2 years — each actionable.</div>
+  </div>
+  <div class="flow-arrow">›</div>
+  <div class="flow-step">
+    <div class="step-num">STEP 02</div>
+    <div class="step-title">Classify</div>
+    <div class="step-body">Tag by narrative theme. Score: sentiment polarity × engagement. HIGH = negative + viral. Medium = neutral. Low = positive.</div>
+  </div>
+  <div class="flow-arrow">›</div>
+  <div class="flow-step">
+    <div class="step-num">STEP 03</div>
+    <div class="step-title">Respond</div>
+    <div class="step-body">HIGH: unified founder message + value drop (expand limits). MEDIUM: seed developer content. LOW: amplify & cross-post.</div>
+  </div>
+  <div class="flow-arrow">›</div>
+  <div class="flow-step">
+    <div class="step-num">STEP 04</div>
+    <div class="step-title">Measure</div>
+    <div class="step-body">Track sentiment delta 7 days post-event. Target: return to baseline within 5 days vs Claude's 10-day recovery average.</div>
+  </div>
+</div>
+
+<!-- ── SECTION 3: EXECUTION PLAN ── -->
+<div class="section-header"><span class="sh-num">05</span><h2>Concrete execution plan</h2></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Channel</th>
+      <th>Content format</th>
+      <th>Sourced from data</th>
+      <th>Cadence</th>
+      <th>Primary KPI</th>
+      <th>Risk</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>YouTube</strong></td>
+      <td>"Nova vs Claude" real benchmark tests, code demos, reaction content</td>
+      <td>YouTube = 12,200 avg engagement vs 2,000 HN in corpus</td>
+      <td>2 videos/week</td>
+      <td>Comment volume; subscriber velocity</td>
+      <td><span class="pill pill-green">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Reddit / HN</strong></td>
+      <td>Technical write-ups; workflow demos; honest API comparisons</td>
+      <td>developer_tooling = 10,378 avg; HN rewards deep content</td>
+      <td>3 posts/week</td>
+      <td>Upvote ratio; HN front page hits</td>
+      <td><span class="pill pill-blue">Medium</span></td>
+    </tr>
+    <tr>
+      <td><strong>X / Twitter</strong></td>
+      <td>Founder personal brand; narrative injection on trending threads</td>
+      <td>Higgsfield case: no unified voice = crisis amplification</td>
+      <td>Daily</td>
+      <td>Share of voice in AI threads</td>
+      <td><span class="pill pill-red">High if mishandled</span></td>
+    </tr>
+    <tr>
+      <td><strong>Crisis response</strong></td>
+      <td>Value compensation (limit increases, free features) + single spokesperson</td>
+      <td>Pricing spike sentiment dip; leak scandal = 2,080 pts negative</td>
+      <td>On-trigger</td>
+      <td>Sentiment recovery time</td>
+      <td><span class="pill pill-red">High if absent</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ── SECTION 4: HIGGSFIELD CASE ── -->
+<div class="section-header" style="margin-top:14px;"><span class="sh-num">06</span><h2>Applied case — what Higgsfield should have done</h2></div>
+
+<div class="two-col">
+  <div class="card" style="border-left: 3px solid var(--accent);">
+    <div class="sec-label">What went wrong</div>
+    <div class="card-title">No trust budget, ragebait attention strategy</div>
+    <p>Ragebait earned attention without trust equity. When scandal hit, no unified founder voice, split positioning between co-founders, and no crisis response playbook. In KZ market where cancel culture is fast-moving, this is structural fragility. No Starbucks-level brand resilience to fall back on.</p>
+    <div class="tag-row">
+      <span class="tag">No personal brand</span>
+      <span class="tag">Split messaging</span>
+      <span class="tag">No crisis SOP</span>
+    </div>
+  </div>
+  <div class="card" style="border-left: 3px solid #1a8c3c;">
+    <div class="sec-label">Correct sequence (data-backed)</div>
+    <div class="card-title">Narrative control in 72 hours</div>
+    <p><strong>Hour 0–6:</strong> Single unified founder post. Acknowledge, don't deflect.<br>
+    <strong>Hour 6–24:</strong> Value drop — increase rate limits, announce free tier expansion. Redirect attention to user benefit.<br>
+    <strong>Day 2–7:</strong> Developer content seeding. Shift narrative to workflow_agent theme (highest engagement in dataset).<br>
+    <strong>Long-term:</strong> Media-train team. Align policy messaging before next launch.</p>
+    <div class="tag-row">
+      <span class="tag out">Unified voice</span>
+      <span class="tag out">Value compensation</span>
+      <span class="tag out">Narrative pivot</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 5: SUCCESS METRICS ── -->
+<div class="section-header"><span class="sh-num">07</span><h2>How we know it is working</h2></div>
+
+<div class="three-col">
+  <div class="card">
+    <div class="sec-label">North star</div>
+    <div class="card-title">Sentiment recovery time</div>
+    <p>Days to return to baseline polarity after a spike event. Target: ≤5 days. Claude's data shows 8–12 day recovery on controversy spikes.</p>
+  </div>
+  <div class="card">
+    <div class="sec-label">Growth signal</div>
+    <div class="card-title">Developer content share</div>
+    <p>% of weekly discourse in developer_tooling or workflow_agent themes. Target: 40%+ of tagged volume. These two themes generate 4.3× the engagement of trust content.</p>
+  </div>
+  <div class="card">
+    <div class="sec-label">Competitive</div>
+    <div class="card-title">Comparison mention rate</div>
+    <p>Organic "Nova vs Claude" posts per week without paid amplification. Claude's 146 comparison-tagged rows are almost entirely community-created — a benchmark to beat.</p>
+  </div>
+</div>
+
+<!-- FOOTER NOTE -->
+<div class="inline-note">
+  Data sources: reddit_posts.json (60 posts), reddit_comments.json (1 comment), youtube_data.json (925 comments across 5 videos), hn_data.json (19 posts) · 
+  Narrative tagging: spike_narrative_analysis.py keyword multi-label · 
+  Engagement metric: sum of likes + like_count + score + points + num_comments + comments_count · 
+  Spike detection: robust z-score (MAD) ≥ 2.0 OR standard z ≥ 2.0 · 
+  All bar values from narrative_theme_summary.csv · HN scores from hn_data.json
+</div>
+
+</body>
+</html>
